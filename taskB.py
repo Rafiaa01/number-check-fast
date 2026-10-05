@@ -19,17 +19,39 @@ class NumberStatsRequest(BaseModel):
             if not 1 <= number <= 1000:
                 raise ValueError("each number must be between 1 and 1000")
         return numbers
-    
-    async def calculate_sum(numbers):
-        await asyncio.sleep(1)
-        return sum(numbers)
 
 
-    async def calculate_average(numbers):
-        await asyncio.sleep(1)
-        return sum(numbers) / len(numbers)
+async def calculate_sum(numbers):
+    await asyncio.sleep(1)
+    return sum(numbers)
 
 
-    async def calculate_max(numbers):
-        await asyncio.sleep(1)
-        return max(numbers)
+async def calculate_average(numbers):
+    await asyncio.sleep(1)
+    return sum(numbers) / len(numbers)
+
+
+async def calculate_max(numbers):
+    await asyncio.sleep(1)
+    return max(numbers)
+
+
+@app.post("/stats")
+async def stats(data: NumberStatsRequest):
+    start_time = time.perf_counter()
+
+    total, average, maximum = await asyncio.gather(
+        calculate_sum(data.numbers),
+        calculate_average(data.numbers),
+        calculate_max(data.numbers),
+    )
+
+    elapsed_time = time.perf_counter() - start_time
+
+    return {
+        "count": len(data.numbers),
+        "sum": total,
+        "average": average,
+        "max": maximum,
+        "seconds": round(elapsed_time, 1),
+    }
